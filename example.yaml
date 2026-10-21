@@ -1,0 +1,59 @@
+# =============================================================================
+# Device configuration for the ESPHome Device Builder (Home Assistant add-on).
+#
+# Create a new ESP32 device in the add-on, open its YAML and replace the content
+# with this file. Add the four secrets from secrets.yaml.example to the add-on's
+# "Secrets" (the API key the add-on generated for the device can be reused).
+#
+# The heat pump logic and the climate component are pulled from GitHub at build
+# time; nothing needs to be copied into the add-on.
+# =============================================================================
+substitutions:
+  name: fairland-heatpump
+  friendly_name: Fairland Heat Pump
+  # Optional overrides of the package defaults:
+  # tx_pin: GPIO17
+  # rx_pin: GPIO16
+  # update_interval: 10s
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    encryption:   # reuses the API encryption key
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: ${name}-fallback
+    password: !secret ap_password
+
+captive_portal:
+
+# Climate component from this repository
+external_components:
+  - source: github://King007t/esphome-fairland-heatpump@main
+    components: [fairland_climate]
+
+# Heat pump package (bus, entities, climate, script, button)
+packages:
+  fairland: github://King007t/esphome-fairland-heatpump/fairland-heatpump.yaml@main
+
+# RS485 modules without automatic direction control (DE/RE pins): uncomment
+# modbus:
+#   id: modbus_bus
+#   flow_control_pin: GPIO4

@@ -1,0 +1,7 @@
+# ESPHome build directory
+.esphome/
+# Real credentials (template: secrets.yaml.example)
+secrets.yaml
+# Local Python environment
+.venv/
+venv/

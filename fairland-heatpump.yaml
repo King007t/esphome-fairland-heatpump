@@ -1,0 +1,508 @@
+# =============================================================================
+# Fairland pool heat pump (InverX / Inverter Plus, control board MWH216/MWH298)
+# Modbus RTU over RS485 – ESPHome package.
+#
+# This file contains only the device logic (bus, entities, climate, script).
+# Include it from your device configuration together with the climate component,
+# see example.yaml:
+#
+#   external_components:
+#     - source: github://King007t/esphome-fairland-heatpump@main
+#       components: [fairland_climate]
+#   packages:
+#     fairland: github://King007t/esphome-fairland-heatpump/fairland-heatpump.yaml@main
+#
+# Substitutions below can be overridden in the device configuration.
+# Wiring, register map and error codes: see README.md
+# =============================================================================
+substitutions:
+  # ESP32 UART2 pins. Default: GPIO17 (TX -> DI on the RS485 module),
+  # GPIO16 (RX <- RO on the RS485 module)
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  # Polling interval for all registers
+  update_interval: 10s
+
+esphome:
+  min_version: 2026.9.0   # reuse_previous_range, custom_pdu, OTA encryption
+
+# -----------------------------------------------------------------------------
+# Bus: 9600 baud, 8 data bits, no parity, 1 stop bit, slave address 1
+# -----------------------------------------------------------------------------
+uart:
+  id: uart_modbus
+  tx_pin: ${tx_pin}
+  rx_pin: ${rx_pin}
+  baud_rate: 9600
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+
+# For RS485 modules without automatic direction control add to your device
+# configuration:
+#   modbus:
+#     id: modbus_bus
+#     flow_control_pin: GPIO4
+modbus:
+  id: modbus_bus
+  uart_id: uart_modbus
+  turnaround_time: 100ms   # Fairland requires at least 60 ms between frames
+
+modbus_controller:
+  - id: fairland
+    modbus_id: modbus_bus
+    address: 1
+    update_interval: ${update_interval}
+  # Same unit, slow polling for registers that practically never change
+  - id: fairland_limits
+    modbus_id: modbus_bus
+    address: 1
+    update_interval: 10min
+
+# -----------------------------------------------------------------------------
+# Coil 0: power (read + write)
+# -----------------------------------------------------------------------------
+switch:
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Power
+    id: hp_power
+    register_type: coil
+    address: 0
+    icon: mdi:power
+
+binary_sensor:
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Status
+    id: hp_status
+    register_type: coil
+    address: 0
+    device_class: running
+
+  # Fault summary: on as soon as any code in the error block (DI 48-95) is active.
+  # Updated by the "Error Code" text sensor.
+  - platform: template
+    name: Fault
+    id: hp_fault
+    device_class: problem
+
+  # E3 = no water flow (DI 51), also derived from the error block
+  - platform: template
+    name: E3 No Water Flow
+    id: hp_e3
+    device_class: problem
+    icon: mdi:water-off
+
+  # Vendor "malfunction / protection indicator" bit (DI 16). Documented for the
+  # Inverter Plus board, possibly unused on InverX firmware – diagnostic only.
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Fault Indicator DI16
+    id: hp_fault_indicator
+    register_type: discrete_input
+    address: 16
+    device_class: problem
+    entity_category: diagnostic
+
+# -----------------------------------------------------------------------------
+# Input registers (read only). Temperatures "type 1": °C = (raw - 60) / 2
+# Read in vendor-compliant blocks of three registers starting at 0, 3, 9, 15 and 18.
+# -----------------------------------------------------------------------------
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Compressor
+    id: hp_compressor
+    register_type: read
+    address: 0
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    state_class: measurement
+    accuracy_decimals: 0
+    icon: mdi:fan
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: PFC Voltage
+    id: hp_pfc_voltage
+    register_type: read
+    address: 2
+    reuse_previous_range: true   # reads block 0-2 in one frame (skips IR1)
+    value_type: U_WORD
+    unit_of_measurement: V
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 0
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Inlet Temperature
+    id: hp_inlet_temperature
+    register_type: read
+    address: 3
+    reuse_previous_range: false  # new block 3-5
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - offset: -60
+      - multiply: 0.5
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Outlet Temperature
+    id: hp_outlet_temperature
+    register_type: read
+    address: 4
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - offset: -60
+      - multiply: 0.5
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Ambient Temperature
+    id: hp_ambient_temperature
+    register_type: read
+    address: 5
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - offset: -60
+      - multiply: 0.5
+
+  # Diagnostic values, complete block 9-11
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Heat Exchanger Temperature
+    id: hp_heat_exchanger_temperature
+    register_type: read
+    address: 9
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    filters:
+      - offset: -60
+      - multiply: 0.5
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Compressor Frequency
+    id: hp_compressor_frequency
+    register_type: read
+    address: 10
+    value_type: U_WORD
+    unit_of_measurement: Hz
+    device_class: frequency
+    state_class: measurement
+    accuracy_decimals: 0
+    entity_category: diagnostic
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Compressor Current
+    id: hp_compressor_current
+    register_type: read
+    address: 11
+    value_type: U_WORD
+    unit_of_measurement: A
+    device_class: current
+    state_class: measurement
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  # Setpoint limits reported by the unit (IR 15-20, blocks 15-17 and 18-20). Only InverX
+  # firmware fills these registers; a raw value of 0 (register unused) is shown as unknown.
+  - platform: modbus_controller
+    modbus_controller_id: fairland_limits
+    name: Auto Setpoint Minimum
+    id: hp_limit_auto_min
+    register_type: read
+    address: 15
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    icon: mdi:thermometer-chevron-down
+    filters:
+      - lambda: "if (x == 0) return {}; return x;"
+      - offset: -60
+      - multiply: 0.5
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland_limits
+    name: Auto Setpoint Maximum
+    id: hp_limit_auto_max
+    register_type: read
+    address: 16
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    icon: mdi:thermometer-chevron-up
+    filters:
+      - lambda: "if (x == 0) return {}; return x;"
+      - offset: -60
+      - multiply: 0.5
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland_limits
+    name: Heating Setpoint Minimum
+    id: hp_limit_heating_min
+    register_type: read
+    address: 17
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    icon: mdi:thermometer-chevron-down
+    filters:
+      - lambda: "if (x == 0) return {}; return x;"
+      - offset: -60
+      - multiply: 0.5
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland_limits
+    name: Heating Setpoint Maximum
+    id: hp_limit_heating_max
+    register_type: read
+    address: 18
+    reuse_previous_range: false  # new block 18-20
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    icon: mdi:thermometer-chevron-up
+    filters:
+      - lambda: "if (x == 0) return {}; return x;"
+      - offset: -60
+      - multiply: 0.5
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland_limits
+    name: Cooling Setpoint Minimum
+    id: hp_limit_cooling_min
+    register_type: read
+    address: 19
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    icon: mdi:thermometer-chevron-down
+    filters:
+      - lambda: "if (x == 0) return {}; return x;"
+      - offset: -60
+      - multiply: 0.5
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland_limits
+    name: Cooling Setpoint Maximum
+    id: hp_limit_cooling_max
+    register_type: read
+    address: 20
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    accuracy_decimals: 1
+    entity_category: diagnostic
+    icon: mdi:thermometer-chevron-up
+    filters:
+      - lambda: "if (x == 0) return {}; return x;"
+      - offset: -60
+      - multiply: 0.5
+
+# -----------------------------------------------------------------------------
+# Holding registers (read + write). HR 0-2 are read as one block, HR 3-4 as another.
+# -----------------------------------------------------------------------------
+select:
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Mode
+    id: hp_mode
+    address: 0
+    value_type: U_WORD
+    optimistic: true
+    icon: mdi:sun-snowflake-variant
+    optionsmap:
+      "Auto": 0
+      "Heating": 1
+      "Cooling": 2
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Working Mode
+    id: hp_working_mode
+    address: 1
+    value_type: U_WORD
+    optimistic: true
+    icon: mdi:speedometer
+    optionsmap:
+      "Smart": 0
+      "Silence": 1
+      "Super Silence": 2
+      "Turbo": 3   # not supported by every model; reverts on the next read if rejected
+
+# Setpoints: the unit keeps one target temperature per mode. Temperature "type 1":
+# raw = °C * 2 + 60. Ranges according to the vendor protocol; the limits the unit
+# actually enforces are shown by the "Setpoint Minimum/Maximum" diagnostic sensors.
+number:
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Auto Target Temperature
+    id: hp_target_auto
+    register_type: holding
+    address: 2
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    mode: slider
+    min_value: 12
+    max_value: 40
+    step: 1
+    icon: mdi:thermometer-auto
+    lambda: "return (x - 60.0f) * 0.5f;"
+    write_lambda: "return (x + 30.0f) * 2.0f;"
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Heating Target Temperature
+    id: hp_target_heating
+    register_type: holding
+    address: 3
+    reuse_previous_range: false  # new block 3-4
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    mode: slider
+    min_value: 18
+    max_value: 40
+    step: 1
+    icon: mdi:sun-thermometer
+    lambda: "return (x - 60.0f) * 0.5f;"
+    write_lambda: "return (x + 30.0f) * 2.0f;"
+
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Cooling Target Temperature
+    id: hp_target_cooling
+    register_type: holding
+    address: 4
+    value_type: U_WORD
+    unit_of_measurement: °C
+    device_class: temperature
+    mode: slider
+    min_value: 12
+    max_value: 30
+    step: 1
+    icon: mdi:snowflake-thermometer
+    lambda: "return (x - 60.0f) * 0.5f;"
+    write_lambda: "return (x + 30.0f) * 2.0f;"
+
+# -----------------------------------------------------------------------------
+# Error code: discrete inputs 48-95 in one frame (FC02, start 48, count 48),
+# exactly the block access the vendor protocol specifies. Plain-text table:
+# components/fairland_climate/fairland_errors.cpp
+# -----------------------------------------------------------------------------
+text_sensor:
+  - platform: modbus_controller
+    modbus_controller_id: fairland
+    name: Error Code
+    id: hp_error_code
+    custom_pdu: [0x02, 0x00, 0x30, 0x00, 0x30]
+    response_size: 6
+    raw_encode: HEXBYTES
+    icon: mdi:alert-circle-outline
+    lambda: |-
+      bool any_active = false;
+      bool e3_active = false;
+      std::string text = fairland_climate::decode_fairland_errors(data, any_active, e3_active);
+      id(hp_fault).publish_state(any_active);
+      id(hp_e3).publish_state(e3_active);
+      return text;
+
+# -----------------------------------------------------------------------------
+# Climate: current = inlet temperature (IR3), target = setpoint of the active mode
+# (HR3 heating, HR4 cooling, HR2 auto), OFF/HEAT/COOL/AUTO via coil 0 + HR0,
+# working mode (HR1) as preset. Built on the entities above, so it generates no
+# additional Modbus traffic.
+# -----------------------------------------------------------------------------
+climate:
+  - platform: fairland_climate
+    name: Heat Pump
+    id: hp_climate
+    power_switch: hp_power
+    mode_select: hp_mode
+    working_mode_select: hp_working_mode
+    heating_target_number: hp_target_heating
+    cooling_target_number: hp_target_cooling
+    auto_target_number: hp_target_auto
+    current_temperature_sensor: hp_inlet_temperature
+    compressor_sensor: hp_compressor
+    power_on_delay: 5s          # delay between power on and writing the mode register
+    mode_options:
+      auto: "Auto"
+      heat: "Heating"
+      cool: "Cooling"
+
+# -----------------------------------------------------------------------------
+# Script "power on + working mode + heating target temperature":
+# if off -> power on, wait 5 s, write working mode, wait 1 s,
+# write mode Heating + heating target temperature.
+# -----------------------------------------------------------------------------
+script:
+  - id: hp_start
+    mode: restart
+    parameters:
+      working_mode: string
+      target_temperature: float
+    then:
+      - if:
+          condition:
+            switch.is_off: hp_power
+          then:
+            - switch.turn_on: hp_power
+            - delay: 5s
+      - select.set:
+          id: hp_working_mode
+          option: !lambda "return working_mode;"
+      - delay: 1s
+      - select.set:
+          id: hp_mode
+          option: "Heating"
+      - number.set:
+          id: hp_target_heating
+          value: !lambda "return target_temperature;"
+
+button:
+  - platform: template
+    name: Start Super Silence 30 °C
+    id: hp_button_super_silence_30
+    icon: mdi:speedometer-slow
+    on_press:
+      - script.execute:
+          id: hp_start
+          working_mode: "Super Silence"
+          target_temperature: 30
+
+  - platform: restart
+    name: Restart
+    entity_category: diagnostic
