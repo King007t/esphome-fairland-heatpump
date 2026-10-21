@@ -1,5 +1,10 @@
 # ESPHome for Fairland Pool Heat Pumps
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![ESPHome 2026.9+](https://img.shields.io/badge/ESPHome-2026.9%2B-00b2ff.svg)
+![Platform ESP32](https://img.shields.io/badge/platform-ESP32-555555.svg)
+![Modbus RTU](https://img.shields.io/badge/protocol-Modbus%20RTU-555555.svg)
+
 Native ESPHome integration for Fairland **InverX** and **Inverter Plus** pool heat pumps over
 Modbus RTU (RS485). An ESP32 talks directly to the heat pump's control board and exposes all
 readings and controls to Home Assistant through the ESPHome API. No cloud account, no Tuya,
@@ -7,6 +12,8 @@ no Home Assistant Modbus integration.
 
 The project is designed for the ESPHome Device Builder add-on: the device configuration pulls
 the heat pump package and the climate component from this repository at build time.
+
+![System overview](docs/overview.svg)
 
 ## Features
 
@@ -23,7 +30,7 @@ the heat pump package and the climate component from this repository at build ti
 
 Fairland heat pumps with the MWH216 / MWH298 control board:
 
-- InverX series (e.g. InverX 13, model NPCR14)
+- InverX series: IXR / IXCR 26–110 and the current generation (e.g. InverX 13, model NPCR14)
 - Inverter Plus series (e.g. IPHCR45)
 - Rebranded units with the same board (e.g. Pool Systems IPS Pro)
 
@@ -37,6 +44,7 @@ Protocol: Modbus RTU, 9600 baud, 8 data bits, no parity, 1 stop bit, slave addre
 | `fairland-heatpump.yaml` | ESPHome package: UART, Modbus, entities, climate, script and button |
 | `components/fairland_climate/` | External component: climate entity and error-code decoder |
 | `secrets.yaml.example` | Secrets expected by `example.yaml` |
+| `docs/` | Wiring diagram and system overview |
 | `LICENSE` | MIT license |
 
 ## Hardware
@@ -58,6 +66,8 @@ outside of the cabinet.
 > before opening the unit. Work at your own risk; modifications may void the warranty.
 
 ### Wiring
+
+![Wiring diagram](docs/wiring.svg)
 
 | From | To | Note |
 |---|---|---|
@@ -315,5 +325,6 @@ This project is released under the [MIT License](LICENSE).
 - [spdr870/fairland_iphcr45_modbus](https://github.com/spdr870/fairland_iphcr45_modbus): Home Assistant Modbus setup and register documentation
 - [rstcologne/ESP-Home-Fairland-Heatpump](https://github.com/rstcologne/ESP-Home-Fairland-Heatpump): ESPHome reference and serial parameters
 - [Home Assistant Community: Controlling a Fairland Pool Heatpump eliminating Tuya](https://community.home-assistant.io/t/controlling-a-fairland-pool-heatpump-eliminating-tuya/579467)
-- [Fairland Inverter Plus user manual](https://www.heatpumps4pools.com/myfiles/file/inverter-plus-vertical-user-manual.pdf): failure code table
+- [Fairland InverX installation and user manual](https://fairland.gr/wp-content/uploads/2024/06/USER-INSTALLATION-MANUAL-FAIRLAND-InverX-Horizontal.pdf): failure code table, heating setpoint range 18–40 °C
+- [Fairland Inverter Plus installation and user manual](https://www.heatpumps4pools.com/myfiles/file/inverter-plus-vertical-user-manual.pdf): identical failure code table
 - [ESPHome modbus_controller](https://esphome.io/components/modbus_controller/)

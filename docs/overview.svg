@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="470" viewBox="0 0 1100 470" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
+  <title>System overview</title>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+  </defs>
+  <rect width="1100" height="470" fill="#ffffff"/>
+
+  <text x="550" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#1f2328">System overview</text>
+
+  <!-- ===== Heat pump ===== -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="70" width="300" height="190" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+    <path d="M40 80 a10 10 0 0 1 10 -10 h280 a10 10 0 0 1 10 10 v26 h-300 z" fill="#0e7c86"/>
+  </g>
+  <text x="190" y="94" text-anchor="middle" font-weight="600" fill="#ffffff">Fairland heat pump</text>
+  <text x="190" y="122" text-anchor="middle" font-size="12" fill="#57606a">InverX / Inverter Plus · board MWH216 / MWH298</text>
+  <g font-size="12" fill="#1f2328">
+    <text x="56" y="150">• Modbus RTU slave 1, 9600 baud, 8N1</text>
+    <text x="56" y="170">• Coil 0: power</text>
+    <text x="56" y="190">• Holding registers: mode, working mode, setpoints</text>
+    <text x="56" y="210">• Input registers: temperatures, compressor, PFC</text>
+    <text x="56" y="230">• Discrete inputs: error bits E0 … Fb</text>
+  </g>
+
+  <!-- ===== ESP32 ===== -->
+  <g filter="url(#shadow)">
+    <rect x="400" y="70" width="300" height="190" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+    <path d="M400 80 a10 10 0 0 1 10 -10 h280 a10 10 0 0 1 10 10 v26 h-300 z" fill="#24292f"/>
+  </g>
+  <text x="550" y="94" text-anchor="middle" font-weight="600" fill="#ffffff">ESP32 + RS485 module</text>
+  <text x="550" y="122" text-anchor="middle" font-size="12" fill="#57606a">ESPHome firmware built from this repository</text>
+  <g font-size="12" fill="#1f2328">
+    <text x="416" y="150">• Polls 8 frames every 10 s (vendor block layout)</text>
+    <text x="416" y="170">• modbus_controller: switch, selects, numbers, sensors</text>
+    <text x="416" y="190">• fairland_climate: thermostat logic and presets</text>
+    <text x="416" y="210">• Error-code decoder: bits → plain text</text>
+    <text x="416" y="230">• Encrypted native API, encrypted OTA</text>
+  </g>
+
+  <!-- ===== Home Assistant ===== -->
+  <g filter="url(#shadow)">
+    <rect x="760" y="70" width="300" height="190" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+    <path d="M760 80 a10 10 0 0 1 10 -10 h280 a10 10 0 0 1 10 10 v26 h-300 z" fill="#1f6feb"/>
+  </g>
+  <text x="910" y="94" text-anchor="middle" font-weight="600" fill="#ffffff">Home Assistant</text>
+  <text x="910" y="122" text-anchor="middle" font-size="12" fill="#57606a">ESPHome integration, auto-discovered</text>
+  <g font-size="12" fill="#1f2328">
+    <text x="776" y="150">• Climate: off / heat / cool / auto, presets</text>
+    <text x="776" y="170">• Setpoints, water and ambient temperatures</text>
+    <text x="776" y="190">• Compressor speed, frequency, current, PFC voltage</text>
+    <text x="776" y="210">• Fault, E3 no water flow, error code text</text>
+    <text x="776" y="230">• Quick-start button, automations, dashboards</text>
+  </g>
+
+  <!-- ===== Links ===== -->
+  <line x1="340" y1="165" x2="400" y2="165" stroke="#57606a" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <rect x="325" y="128" width="90" height="18" rx="9" fill="#ffffff" stroke="#8c959f"/>
+  <text x="370" y="141" text-anchor="middle" font-size="11" fill="#1f2328">RS485 + 12 V</text>
+  <line x1="700" y1="165" x2="760" y2="165" stroke="#57606a" stroke-width="2.5" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <rect x="690" y="128" width="80" height="18" rx="9" fill="#ffffff" stroke="#8c959f"/>
+  <text x="730" y="141" text-anchor="middle" font-size="11" fill="#1f2328">Wi-Fi, API</text>
+
+  <!-- ===== Build and update flow ===== -->
+  <text x="40" y="312" font-size="15" font-weight="700" fill="#1f2328">Build and update flow</text>
+  <text x="40" y="332" font-size="12" fill="#57606a">Nothing is copied by hand: the add-on fetches the package and the component from GitHub at build time.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="40" y="350" width="220" height="90" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+    <rect x="320" y="350" width="220" height="90" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+    <rect x="600" y="350" width="220" height="90" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+    <rect x="880" y="350" width="180" height="90" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+  </g>
+  <text x="150" y="376" text-anchor="middle" font-weight="600" fill="#1f2328">GitHub repository</text>
+  <text x="150" y="396" text-anchor="middle" font-size="12" fill="#57606a">fairland-heatpump.yaml (package)</text>
+  <text x="150" y="414" text-anchor="middle" font-size="12" fill="#57606a">components/fairland_climate</text>
+
+  <text x="430" y="376" text-anchor="middle" font-weight="600" fill="#1f2328">ESPHome Device Builder</text>
+  <text x="430" y="396" text-anchor="middle" font-size="12" fill="#57606a">example.yaml + your secrets</text>
+  <text x="430" y="414" text-anchor="middle" font-size="12" fill="#57606a">compiles the firmware</text>
+
+  <text x="710" y="376" text-anchor="middle" font-weight="600" fill="#1f2328">Firmware</text>
+  <text x="710" y="396" text-anchor="middle" font-size="12" fill="#57606a">first time over USB</text>
+  <text x="710" y="414" text-anchor="middle" font-size="12" fill="#57606a">updates over the air (OTA)</text>
+
+  <text x="970" y="376" text-anchor="middle" font-weight="600" fill="#1f2328">ESP32 at the pool</text>
+  <text x="970" y="396" text-anchor="middle" font-size="12" fill="#57606a">runs autonomously,</text>
+  <text x="970" y="414" text-anchor="middle" font-size="12" fill="#57606a">no GitHub access needed</text>
+
+  <line x1="260" y1="395" x2="320" y2="395" stroke="#57606a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="540" y1="395" x2="600" y2="395" stroke="#57606a" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="820" y1="395" x2="880" y2="395" stroke="#57606a" stroke-width="2.5" marker-end="url(#arrow)"/>
+</svg>

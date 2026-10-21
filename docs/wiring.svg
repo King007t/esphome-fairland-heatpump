@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="780" viewBox="0 0 1100 780" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
+  <title>Fairland heat pump to ESP32 wiring</title>
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+  </defs>
+  <rect width="1100" height="780" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="550" y="40" text-anchor="middle" font-size="22" font-weight="700" fill="#1f2328">Fairland heat pump ↔ ESP32 wiring</text>
+  <text x="550" y="62" text-anchor="middle" font-size="13" fill="#57606a">RS485 module with automatic direction control · ESP32 powered from the heat pump's 12 V · total 10 wires</text>
+
+  <!-- ===== Heat pump control board ===== -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="110" width="250" height="250" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+    <path d="M40 120 a10 10 0 0 1 10 -10 h230 a10 10 0 0 1 10 10 v26 h-250 z" fill="#0e7c86"/>
+  </g>
+  <text x="165" y="134" text-anchor="middle" font-weight="600" fill="#ffffff">Heat pump control board</text>
+  <text x="56" y="162" font-size="12" fill="#57606a">Wi-Fi module header, 4 pins</text>
+  <text x="56" y="178" font-size="12" fill="#57606a">board print: B · A · G · +12V</text>
+  <!-- header connector -->
+  <rect x="236" y="176" width="40" height="150" rx="4" fill="#e7ecf0" stroke="#8c959f"/>
+  <rect x="250" y="183" width="12" height="12" fill="#1f2328"/>
+  <rect x="250" y="223" width="12" height="12" fill="#1f2328"/>
+  <rect x="250" y="263" width="12" height="12" fill="#1f2328"/>
+  <rect x="250" y="303" width="12" height="12" fill="#1f2328"/>
+  <text x="226" y="194" text-anchor="end" font-weight="600" fill="#1f2328">B</text>
+  <text x="226" y="234" text-anchor="end" font-weight="600" fill="#1f2328">A</text>
+  <text x="226" y="274" text-anchor="end" font-weight="600" fill="#1f2328">GND (12V−)</text>
+  <text x="226" y="314" text-anchor="end" font-weight="600" fill="#1f2328">12V+</text>
+  <text x="165" y="346" text-anchor="middle" font-size="11" fill="#57606a">mains voltage inside, disconnect first</text>
+
+  <!-- ===== RS485 module ===== -->
+  <g filter="url(#shadow)">
+    <rect x="440" y="110" width="240" height="210" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+    <path d="M440 120 a10 10 0 0 1 10 -10 h220 a10 10 0 0 1 10 10 v26 h-240 z" fill="#1f6feb"/>
+  </g>
+  <text x="560" y="134" text-anchor="middle" font-weight="600" fill="#ffffff">RS485 module</text>
+  <text x="560" y="162" text-anchor="middle" font-size="12" fill="#57606a">TTL ↔ RS485, automatic direction, 3.3 V / 5 V</text>
+  <!-- stylised PCB -->
+  <rect x="518" y="176" width="84" height="124" rx="4" fill="#1b4d8c" stroke="#123a6b"/>
+  <rect x="540" y="226" width="40" height="22" rx="2" fill="#0b2545"/>
+  <text x="560" y="241" text-anchor="middle" font-size="9" fill="#9fb8d9">MAX3485</text>
+  <circle cx="590" cy="190" r="3" fill="#ff5a5a"/>
+  <circle cx="590" cy="202" r="3" fill="#2ecc71"/>
+  <!-- left screw terminals -->
+  <rect x="452" y="180" width="26" height="100" rx="3" fill="#2f8f4e" stroke="#1f6e3a"/>
+  <circle cx="465" cy="190" r="5" fill="#e7ecf0" stroke="#1f6e3a"/>
+  <circle cx="465" cy="230" r="5" fill="#e7ecf0" stroke="#1f6e3a"/>
+  <circle cx="465" cy="270" r="5" fill="#e7ecf0" stroke="#1f6e3a"/>
+  <text x="484" y="194" font-weight="600" fill="#1f2328">B−</text>
+  <text x="484" y="234" font-weight="600" fill="#1f2328">A+</text>
+  <text x="484" y="274" font-weight="600" fill="#1f2328">GND</text>
+  <!-- right pin header -->
+  <rect x="648" y="170" width="18" height="130" rx="3" fill="#1f2328"/>
+  <circle cx="657" cy="180" r="3" fill="#e7ecf0"/>
+  <circle cx="657" cy="215" r="3" fill="#e7ecf0"/>
+  <circle cx="657" cy="250" r="3" fill="#e7ecf0"/>
+  <circle cx="657" cy="285" r="3" fill="#e7ecf0"/>
+  <text x="642" y="184" text-anchor="end" font-weight="600" fill="#1f2328">VCC</text>
+  <text x="642" y="219" text-anchor="end" font-weight="600" fill="#1f2328">GND</text>
+  <text x="642" y="254" text-anchor="end" font-weight="600" fill="#1f2328">TXD</text>
+  <text x="642" y="289" text-anchor="end" font-weight="600" fill="#1f2328">RXD</text>
+
+  <!-- ===== ESP32 DevKit ===== -->
+  <g filter="url(#shadow)">
+    <rect x="820" y="110" width="240" height="400" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+    <path d="M820 120 a10 10 0 0 1 10 -10 h220 a10 10 0 0 1 10 10 v26 h-240 z" fill="#24292f"/>
+  </g>
+  <text x="940" y="134" text-anchor="middle" font-weight="600" fill="#ffffff">ESP32 DevKit (esp32dev)</text>
+  <text x="940" y="162" text-anchor="middle" font-size="12" fill="#57606a">NodeMCU-32S, 30 pins, USB-C</text>
+  <!-- stylised board -->
+  <rect x="892" y="176" width="138" height="300" rx="6" fill="#0d1117" stroke="#30363d"/>
+  <rect x="905" y="190" width="100" height="70" rx="3" fill="#c9d1d9" stroke="#8b949e"/>
+  <text x="955" y="229" text-anchor="middle" font-size="10" fill="#1f2328">ESP32-WROOM-32</text>
+  <rect x="935" y="440" width="40" height="24" rx="4" fill="#8b949e"/>
+  <text x="955" y="456" text-anchor="middle" font-size="9" fill="#0d1117">USB-C</text>
+  <text x="955" y="486" text-anchor="middle" font-size="10" fill="#8b949e">first flash and debugging</text>
+  <!-- left pin header -->
+  <rect x="828" y="170" width="18" height="280" rx="3" fill="#1f2328"/>
+  <circle cx="837" cy="180" r="3" fill="#e7ecf0"/>
+  <circle cx="837" cy="215" r="3" fill="#e7ecf0"/>
+  <circle cx="837" cy="250" r="3" fill="#e7ecf0"/>
+  <circle cx="837" cy="285" r="3" fill="#e7ecf0"/>
+  <circle cx="837" cy="400" r="3" fill="#e7ecf0"/>
+  <circle cx="837" cy="435" r="3" fill="#e7ecf0"/>
+  <text x="852" y="184" font-size="12" font-weight="600" fill="#1f2328">3V3</text>
+  <text x="852" y="219" font-size="12" font-weight="600" fill="#1f2328">GND</text>
+  <text x="852" y="254" font-size="12" font-weight="600" fill="#1f2328">RX2</text>
+  <text x="852" y="266" font-size="9" fill="#57606a">GPIO16</text>
+  <text x="852" y="289" font-size="12" font-weight="600" fill="#1f2328">TX2</text>
+  <text x="852" y="301" font-size="9" fill="#57606a">GPIO17</text>
+  <text x="852" y="404" font-size="12" font-weight="600" fill="#1f2328">VIN</text>
+  <text x="852" y="416" font-size="9" fill="#57606a">5 V</text>
+  <text x="852" y="439" font-size="12" font-weight="600" fill="#1f2328">GND</text>
+
+  <!-- ===== Step-down converter ===== -->
+  <g filter="url(#shadow)">
+    <rect x="440" y="400" width="240" height="130" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+    <path d="M440 410 a10 10 0 0 1 10 -10 h220 a10 10 0 0 1 10 10 v26 h-240 z" fill="#d2691e"/>
+  </g>
+  <text x="560" y="424" text-anchor="middle" font-weight="600" fill="#ffffff">Step-down 12 V → 5 V</text>
+  <rect x="510" y="446" width="100" height="70" rx="4" fill="#1b4d8c" stroke="#123a6b"/>
+  <circle cx="588" cy="462" r="7" fill="#2f6fbf" stroke="#9fb8d9"/>
+  <line x1="583" y1="462" x2="593" y2="462" stroke="#e7ecf0" stroke-width="2"/>
+  <text x="560" y="500" text-anchor="middle" font-size="9" fill="#9fb8d9">MP1584 / LM2596</text>
+  <circle cx="440" cy="455" r="5" fill="#e7ecf0" stroke="#1f2328"/>
+  <circle cx="440" cy="495" r="5" fill="#e7ecf0" stroke="#1f2328"/>
+  <circle cx="680" cy="455" r="5" fill="#e7ecf0" stroke="#1f2328"/>
+  <circle cx="680" cy="495" r="5" fill="#e7ecf0" stroke="#1f2328"/>
+  <text x="452" y="459" font-weight="600" fill="#1f2328">IN−</text>
+  <text x="452" y="499" font-weight="600" fill="#1f2328">IN+</text>
+  <text x="668" y="459" text-anchor="end" font-weight="600" fill="#1f2328">OUT+</text>
+  <text x="668" y="499" text-anchor="end" font-weight="600" fill="#1f2328">OUT−</text>
+  <text x="560" y="546" text-anchor="middle" font-size="11" fill="#cf222e">adjust to 5.0 V with a multimeter before connecting the ESP32</text>
+
+  <!-- ===== Wires ===== -->
+  <!-- heat pump -> RS485: B and A straight -->
+  <line x1="262" y1="190" x2="460" y2="190" stroke="#1f6feb" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="262" y1="230" x2="460" y2="230" stroke="#d4a017" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- heat pump GND -> step-down IN-, optional branch to module GND -->
+  <polyline points="262,270 400,270 400,455 440,455" fill="none" stroke="#1f2328" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="400" y1="270" x2="460" y2="270" stroke="#1f2328" stroke-width="2.5" stroke-dasharray="6 5"/>
+  <circle cx="400" cy="270" r="4" fill="#1f2328"/>
+  <!-- heat pump 12V+ -> step-down IN+ -->
+  <polyline points="262,310 330,310 330,495 440,495" fill="none" stroke="#cf222e" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- step-down -> ESP32 -->
+  <polyline points="680,455 740,455 740,400 837,400" fill="none" stroke="#cf222e" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <polyline points="680,495 780,495 780,435 837,435" fill="none" stroke="#1f2328" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- RS485 -> ESP32 -->
+  <line x1="657" y1="180" x2="837" y2="180" stroke="#e36209" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="657" y1="215" x2="837" y2="215" stroke="#1f2328" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="657" y1="250" x2="837" y2="250" stroke="#1a7f37" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="657" y1="285" x2="837" y2="285" stroke="#8250df" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- ===== Wire label chips ===== -->
+  <g font-size="11" font-weight="600">
+    <rect x="340" y="178" width="46" height="18" rx="9" fill="#ffffff" stroke="#1f6feb"/>
+    <text x="363" y="191" text-anchor="middle" fill="#1f6feb">B → B−</text>
+    <rect x="340" y="218" width="46" height="18" rx="9" fill="#ffffff" stroke="#d4a017"/>
+    <text x="363" y="231" text-anchor="middle" fill="#9a7407">A → A+</text>
+    <rect x="300" y="258" width="40" height="18" rx="9" fill="#ffffff" stroke="#1f2328"/>
+    <text x="320" y="271" text-anchor="middle" fill="#1f2328">GND</text>
+    <rect x="300" y="380" width="60" height="18" rx="9" fill="#ffffff" stroke="#cf222e"/>
+    <text x="330" y="393" text-anchor="middle" fill="#cf222e">12 V in</text>
+    <rect x="700" y="372" width="60" height="18" rx="9" fill="#ffffff" stroke="#cf222e"/>
+    <text x="730" y="385" text-anchor="middle" fill="#cf222e">5 V out</text>
+    <rect x="720" y="171" width="54" height="18" rx="9" fill="#ffffff" stroke="#e36209"/>
+    <text x="747" y="184" text-anchor="middle" fill="#e36209">3.3 V</text>
+    <rect x="690" y="241" width="114" height="18" rx="9" fill="#ffffff" stroke="#1a7f37"/>
+    <text x="747" y="254" text-anchor="middle" fill="#1a7f37">TXD → RX2 (GPIO16)</text>
+    <rect x="690" y="276" width="114" height="18" rx="9" fill="#ffffff" stroke="#8250df"/>
+    <text x="747" y="289" text-anchor="middle" fill="#8250df">RXD → TX2 (GPIO17)</text>
+  </g>
+
+  <!-- ===== Variant: classic MAX485 with DE/RE ===== -->
+  <rect x="40" y="570" width="640" height="100" rx="10" fill="#fff8e6" stroke="#d4a017"/>
+  <text x="56" y="594" font-weight="600" fill="#1f2328">Variant: classic MAX485 module with DE / RE pins (no automatic direction)</text>
+  <!-- mini sketch -->
+  <rect x="56" y="608" width="18" height="48" rx="3" fill="#1f2328"/>
+  <circle cx="65" cy="618" r="3" fill="#e7ecf0"/>
+  <circle cx="65" cy="632" r="3" fill="#e7ecf0"/>
+  <circle cx="65" cy="646" r="3" fill="#e7ecf0"/>
+  <text x="80" y="622" font-size="11" fill="#1f2328">DE</text>
+  <text x="80" y="636" font-size="11" fill="#1f2328">RE</text>
+  <text x="80" y="650" font-size="11" fill="#1f2328">RO / DI as RXD / TXD</text>
+  <path d="M100 618 h14 v14 h-14" fill="none" stroke="#d4a017" stroke-width="2.5"/>
+  <line x1="114" y1="625" x2="200" y2="625" stroke="#d4a017" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="206" y="629" font-size="12" font-weight="600" fill="#1f2328">ESP32 GPIO4</text>
+  <text x="300" y="622" font-size="12" fill="#1f2328">1. bridge DE and RE and connect them to GPIO4</text>
+  <text x="300" y="640" font-size="12" fill="#1f2328">2. enable the modbus: flow_control_pin block in example.yaml</text>
+  <text x="300" y="658" font-size="12" fill="#1f2328">3. power the module from 3V3; RO → GPIO16, DI → GPIO17</text>
+
+  <!-- ===== Legend ===== -->
+  <rect x="700" y="570" width="360" height="100" rx="10" fill="#f6f8fa" stroke="#d0d7de"/>
+  <text x="716" y="594" font-weight="600" fill="#1f2328">Legend</text>
+  <g font-size="11" fill="#1f2328">
+    <line x1="716" y1="612" x2="746" y2="612" stroke="#1f6feb" stroke-width="3.5"/><text x="754" y="616">RS485 B</text>
+    <line x1="716" y1="630" x2="746" y2="630" stroke="#d4a017" stroke-width="3.5"/><text x="754" y="634">RS485 A</text>
+    <line x1="716" y1="648" x2="746" y2="648" stroke="#1f2328" stroke-width="3.5"/><text x="754" y="652">GND</text>
+    <line x1="716" y1="662" x2="746" y2="662" stroke="#1f2328" stroke-width="2.5" stroke-dasharray="6 5"/><text x="754" y="666">optional</text>
+    <line x1="880" y1="612" x2="910" y2="612" stroke="#cf222e" stroke-width="3.5"/><text x="918" y="616">12 V / 5 V supply</text>
+    <line x1="880" y1="630" x2="910" y2="630" stroke="#e36209" stroke-width="3.5"/><text x="918" y="634">3.3 V</text>
+    <line x1="880" y1="648" x2="910" y2="648" stroke="#1a7f37" stroke-width="3.5"/><text x="918" y="652">data to ESP32 (RX2)</text>
+    <line x1="880" y1="662" x2="910" y2="662" stroke="#8250df" stroke-width="3.5"/><text x="918" y="666">data from ESP32 (TX2)</text>
+  </g>
+
+  <!-- ===== Notes ===== -->
+  <g font-size="12" fill="#1f2328">
+    <text x="40" y="700">• No response from the unit: swap A and B first, then TXD and RXD. Both are harmless.</text>
+    <text x="40" y="720">• Use a twisted pair for A/B; above roughly 10–20 m add a 120 Ω termination between A and B at the ESP32 end (many modules have a jumper).</text>
+    <text x="40" y="740">• ESP32 powered over USB instead of 12 V: leave out the step-down and connect only B, A and GND. Never feed USB and VIN at the same time.</text>
+    <text x="40" y="760">• The module's GND screw terminal (dashed) is optional; the ground is already shared through the step-down.</text>
+  </g>
+</svg>
