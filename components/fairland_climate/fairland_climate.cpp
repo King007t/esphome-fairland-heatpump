@@ -128,8 +128,16 @@ void FairlandClimate::control(const climate::ClimateCall &call) {
   }
 
   if (call.get_target_temperature().has_value()) {
-    const float target = *call.get_target_temperature();
     number::Number *num = this->target_number_for_mode_(setpoint_mode);
+    // The climate entity shows one visual range for all modes; clamp to the range of the
+    // setpoint that is actually written so the displayed value matches what the unit accepts.
+    const float requested = *call.get_target_temperature();
+    const float target = std::clamp(requested, num->traits.get_min_value(), num->traits.get_max_value());
+    if (target != requested) {
+      ESP_LOGW(TAG, "Target temperature %.1f °C is outside the range of '%s' (%.1f-%.1f °C), using %.1f °C",
+               requested, num->get_name().c_str(), num->traits.get_min_value(), num->traits.get_max_value(),
+               target);
+    }
     ESP_LOGD(TAG, "Target temperature %.1f °C -> '%s'", target, num->get_name().c_str());
     num->make_call().set_value(target).perform();
     this->target_temperature = target;

@@ -169,11 +169,27 @@ Further options:
         "Super Silence": !remove
         "Turbo": !remove
   ```
-- **Target temperature ranges:** `min_value` / `max_value` of the three setpoint numbers
-  (Heating 18–40 °C, Cooling 12–30 °C, Auto 12–40 °C, as specified in the vendor protocol).
-  The unit reports the limits it actually enforces in the `Setpoint Minimum` / `Setpoint Maximum`
-  diagnostic sensors; adjust the numbers if they differ. The climate entity adopts the ranges
-  automatically.
+- **Target temperature ranges:** the package defaults are Heating 18–40 °C, Cooling 12–30 °C and
+  Auto 12–40 °C, as specified in the vendor protocol. The unit reports the limits it actually
+  enforces in the `Setpoint Minimum` / `Setpoint Maximum` diagnostic sensors. To narrow a range,
+  override the number in the device configuration; the climate entity adopts the new range
+  automatically. Each block is optional:
+
+  ```yaml
+  number:
+    - id: !extend hp_target_heating
+      min_value: 18
+      max_value: 32
+    - id: !extend hp_target_cooling
+      min_value: 15
+      max_value: 28
+    - id: !extend hp_target_auto
+      min_value: 18
+      max_value: 35
+  ```
+
+  The same `!extend` mechanism overrides any other key of a package entity, e.g. `name`, `icon`,
+  `step` or `disabled_by_default`.
 - **Logging:** register values are logged at the default `DEBUG` level. To see the raw Modbus
   frames add to the device configuration:
 
@@ -231,6 +247,10 @@ entities above, so it generates no additional Modbus traffic.
 - Action (heating / cooling / idle) is derived from the compressor speed.
 - After a command the requested mode is shown until the unit confirms it; the real state is
   adopted with the next polling cycle at the latest.
+- Visual range: the climate entity shows one range for all modes, spanning the lowest minimum
+  and the highest maximum of the three setpoint numbers (12–40 °C with the defaults). A target
+  outside the range of the active mode is clamped to that range before it is written, e.g.
+  15 °C in heating mode becomes 18 °C.
 
 Suggested Home Assistant thermostat card features: `climate-hvac-modes` and
 `climate-preset-modes`.

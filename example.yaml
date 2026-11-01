@@ -65,3 +65,16 @@ packages:
 #     optionsmap:
 #       "Super Silence": !remove
 #       "Turbo": !remove
+
+# Narrow the setpoint ranges (package defaults: heating 18-40, cooling 12-30,
+# auto 12-40 °C); the climate entity adopts the new ranges automatically
+# number:
+#   - id: !extend hp_target_heating
+#     min_value: 18
+#     max_value: 32
+#   - id: !extend hp_target_cooling
+#     min_value: 15
+#     max_value: 28
+#   - id: !extend hp_target_auto
+#     min_value: 18
+#     max_value: 35
