@@ -57,3 +57,11 @@ packages:
 # modbus:
 #   id: modbus_bus
 #   flow_control_pin: GPIO4
+
+# Models that reject some working modes (e.g. InverX 13: only Smart and Silence):
+# remove the unsupported options, the climate presets follow automatically
+# select:
+#   - id: !extend hp_working_mode
+#     optionsmap:
+#       "Super Silence": !remove
+#       "Turbo": !remove

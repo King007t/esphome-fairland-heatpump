@@ -54,7 +54,7 @@
     <text x="776" y="150">• Climate: off / heat / cool / auto, presets</text>
     <text x="776" y="170">• Setpoints, water and ambient temperatures</text>
     <text x="776" y="190">• Compressor speed, frequency, current, PFC voltage</text>
-    <text x="776" y="210">• Fault, E3 no water flow, error code text</text>
+    <text x="776" y="210">• Fault, water flow, error code text</text>
     <text x="776" y="230">• Automations and dashboards</text>
   </g>
 

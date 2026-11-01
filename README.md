@@ -21,7 +21,7 @@ the heat pump package and the climate component from this repository at build ti
   Super Silence / Turbo) and target temperature
 - Water inlet, outlet and ambient temperature, compressor speed, frequency and current,
   PFC voltage
-- Error codes decoded to plain text, plus fault and no-water-flow indicators
+- Error codes decoded to plain text, plus fault and water-flow indicators
 - Climate (thermostat) entity with presets for the Home Assistant thermostat card
 - Encrypted API, encrypted OTA updates, captive-portal fallback
 
@@ -78,11 +78,13 @@ outside of the cabinet.
 | Step-down **OUT−** | ESP32 **GND** | |
 | ESP32 **3V3** | RS485 module **VCC** | ESP32 inputs are not 5 V tolerant; run the module at 3.3 V or level-shift RO |
 | ESP32 **GND** | RS485 module **GND** | |
-| ESP32 **GPIO17** (TX) | RS485 module **DI** | substitution `tx_pin` |
-| ESP32 **GPIO16** (RX) | RS485 module **RO** | substitution `rx_pin` |
+| ESP32 **GPIO17** (TX2) | RS485 module **TXD** (classic MAX485: **DI**) | substitution `tx_pin` |
+| ESP32 **GPIO16** (RX2) | RS485 module **RXD** (classic MAX485: **RO**) | substitution `rx_pin` |
 | ESP32 **GPIO4** (optional) | RS485 module **DE + RE** (bridged) | only without automatic direction control, see `flow_control_pin` |
 
-- No response from the unit: swap A and B first, this is the most common mistake.
+- No response from the unit: swap A and B first, this is the most common mistake. Then swap RXD and
+  TXD: auto-direction modules label these pins from the ESP32's point of view (straight connection),
+  classic MAX485 boards use RO/DI (RO → GPIO16, DI → GPIO17).
 - Termination: for long cables (more than about 10–20 m) place a 120 Ω resistor between A and B
   at the ESP end. Many modules provide a jumper or a populated R0/120R for this.
 - The 12 V supply of the control board is sufficient for the ESP32 and the RS485 module.
@@ -154,8 +156,19 @@ package blocks:
 
 Further options:
 
-- **Turbo:** not every model accepts working mode 3. If the unit rejects it, the select reverts on
-  the next read. To remove the option, copy the package into the add-on and edit `optionsmap`.
+- **Working modes:** not every model accepts all four values of HR 1. If the unit rejects a value,
+  the select (and the climate preset) reverts to the previous mode on the next read. The InverX 13
+  (NPCR14) accepts only Smart and Silence; Super Silence is known to work on the Inverter Plus
+  IPHCR45. Remove unsupported options in the device configuration, the climate presets follow
+  automatically:
+
+  ```yaml
+  select:
+    - id: !extend hp_working_mode
+      optionsmap:
+        "Super Silence": !remove
+        "Turbo": !remove
+  ```
 - **Target temperature ranges:** `min_value` / `max_value` of the three setpoint numbers
   (Heating 18–40 °C, Cooling 12–30 °C, Auto 12–40 °C, as specified in the vendor protocol).
   The unit reports the limits it actually enforces in the `Setpoint Minimum` / `Setpoint Maximum`
@@ -176,9 +189,8 @@ Further options:
 |---|---|---|---|
 | Status | binary_sensor | coil 0 | unit on/off |
 | Power | switch | coil 0 | disabled by default |
-| Fault | binary_sensor (problem) | DI 48–95 | any error code active |
-| E3 No Water Flow | binary_sensor (problem) | DI 51 | protection message |
-| Fault Indicator DI16 | binary_sensor, diagnostic | DI 16 | vendor summary bit, not present on all firmware versions |
+| Fault | binary_sensor (problem) | DI 16, DI 48–95 | vendor malfunction bit or any error code active |
+| Water Flow | binary_sensor (problem) | DI 51 | `Problem` while E3 (no water flow) is active |
 | Error Code | text_sensor | DI 48–95 | e.g. `E3: No water flow (protection)` |
 | Compressor | sensor % | IR 0 | compressor speed |
 | PFC Voltage | sensor V | IR 2 | DC link voltage |
@@ -227,8 +239,10 @@ Suggested Home Assistant thermostat card features: `climate-hvac-modes` and
 
 The error bits (discrete inputs 48–95) are read in a single frame and translated in
 `components/fairland_climate/fairland_errors.cpp`. Several active codes are joined with ` | `;
-without any code the text sensor reads `No fault`. The `Fault` and `E3 No Water Flow` binary
-sensors are derived from the same frame.
+without any code the text sensor reads `No fault`. The `Fault` and `Water Flow` binary
+sensors are derived from the same frame. `Fault` additionally includes the vendor's own malfunction bit
+(discrete input 16), which the unit sets a few seconds before the code appears; boards that leave the
+bit unused read 0, so `Fault` then follows the error block alone.
 
 | Code | DI | Description | Type |
 |---|---|---|---|
@@ -263,7 +277,7 @@ Temperatures of "type 1": `°C = (raw − 60) / 2`, written as `raw = °C × 2 +
 | Coil (FC01/05) | 0 | Power | 0 off, 1 on |
 | Coil | 1 | Forced defrosting | 1 = start (unused) |
 | Discrete input (FC02) | 0 / 1 | Power status / defrosting | |
-| Discrete input | 16 | Malfunction / protection indicator | not on all firmware versions |
+| Discrete input | 16 | Malfunction / protection indicator | feeds `Fault`; confirmed on InverX 13 |
 | Discrete input | 48–95 | Error bits E0 … Fb (92–95 reserved) | see table above |
 | Input register (FC04) | 0 | Compressor speed | % |
 | Input register | 1 | Compressor target frequency | Hz |
@@ -294,7 +308,7 @@ limits (input registers 15–17 and 18–20) are polled by a second controller e
 | Values arrive but with occasional gaps | Increase `turnaround_time` to 200 ms (merge into the `modbus:` block like `flow_control_pin`) |
 | Mode or working mode reverts after setting | Value rejected by the unit (e.g. Turbo), or unit was off: power on first |
 | E3 after power-on | Normal until the circulation pump provides flow |
-| Fault Indicator DI16 never turns on | Not implemented by this firmware; `Fault` uses the error block instead |
+| `Fault` is on while `Error Code` reads `No fault` | The unit sets its malfunction bit (DI 16) before the code appears, or a protection state without a code is active; check the unit's display |
 | Build still uses an old version of this repository | The cached copy is refreshed once a day; set `refresh: always` (see Installation) to force an update. **Clean Build Files** does not refresh the cache |
 
 ## License

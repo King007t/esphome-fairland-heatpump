@@ -59,6 +59,12 @@ modbus_controller:
     address: 1
     update_interval: 10min
 
+# True while any code in the error block is active; combined with DI 16 into "Fault"
+globals:
+  - id: hp_any_error_code
+    type: bool
+    initial_value: "false"
+
 # -----------------------------------------------------------------------------
 # Coil 0: power (read + write)
 # -----------------------------------------------------------------------------
@@ -81,30 +87,32 @@ binary_sensor:
     address: 0
     device_class: running
 
-  # Fault summary: on as soon as any code in the error block (DI 48-95) is active.
-  # Updated by the "Error Code" text sensor.
+  # Fault summary: vendor malfunction bit (DI 16) OR any code in the error block (DI 48-95).
+  # Updated by the "Error Code" text sensor and by the DI 16 reader below.
   - platform: template
     name: Fault
     id: hp_fault
     device_class: problem
 
-  # E3 = no water flow (DI 51), also derived from the error block
+  # Water flow: on ("Problem") while E3 = no water flow (DI 51) is active, derived from the error block
   - platform: template
-    name: E3 No Water Flow
-    id: hp_e3
+    name: Water Flow
+    id: hp_water_flow
     device_class: problem
     icon: mdi:water-off
 
-  # Vendor "malfunction / protection indicator" bit (DI 16). Documented for the
-  # Inverter Plus board, possibly unused on InverX firmware – diagnostic only.
+  # Vendor "malfunction / protection indicator" bit (DI 16). Not exposed as an entity;
+  # it feeds "Fault" together with the error block. Boards that leave the bit
+  # unused read 0, so "Fault" then depends on the error block alone.
   - platform: modbus_controller
     modbus_controller_id: fairland
     name: Fault Indicator DI16
     id: hp_fault_indicator
+    internal: true
     register_type: discrete_input
     address: 16
-    device_class: problem
-    entity_category: diagnostic
+    on_state:
+      - lambda: id(hp_fault).publish_state(x || id(hp_any_error_code));
 
 # -----------------------------------------------------------------------------
 # Input registers (read only). Temperatures "type 1": °C = (raw - 60) / 2
@@ -441,8 +449,9 @@ text_sensor:
       bool any_active = false;
       bool e3_active = false;
       std::string text = fairland_climate::decode_fairland_errors(data, any_active, e3_active);
-      id(hp_fault).publish_state(any_active);
-      id(hp_e3).publish_state(e3_active);
+      id(hp_any_error_code) = any_active;
+      id(hp_fault).publish_state(any_active || id(hp_fault_indicator).state);
+      id(hp_water_flow).publish_state(e3_active);
       return text;
 
 # -----------------------------------------------------------------------------

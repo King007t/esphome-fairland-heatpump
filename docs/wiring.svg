@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="780" viewBox="0 0 1100 780" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="800" viewBox="0 0 1100 800" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13">
   <title>Fairland heat pump to ESP32 wiring</title>
   <defs>
     <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
@@ -9,7 +9,7 @@
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
     </marker>
   </defs>
-  <rect width="1100" height="780" fill="#ffffff"/>
+  <rect width="1100" height="800" fill="#ffffff"/>
 
   <!-- Title -->
   <text x="550" y="40" text-anchor="middle" font-size="22" font-weight="700" fill="#1f2328">Fairland heat pump ↔ ESP32 wiring</text>
@@ -64,8 +64,8 @@
   <circle cx="657" cy="285" r="3" fill="#e7ecf0"/>
   <text x="642" y="184" text-anchor="end" font-weight="600" fill="#1f2328">VCC</text>
   <text x="642" y="219" text-anchor="end" font-weight="600" fill="#1f2328">GND</text>
-  <text x="642" y="254" text-anchor="end" font-weight="600" fill="#1f2328">TXD</text>
-  <text x="642" y="289" text-anchor="end" font-weight="600" fill="#1f2328">RXD</text>
+  <text x="642" y="254" text-anchor="end" font-weight="600" fill="#1f2328">RXD</text>
+  <text x="642" y="289" text-anchor="end" font-weight="600" fill="#1f2328">TXD</text>
 
   <!-- ===== ESP32 DevKit ===== -->
   <g filter="url(#shadow)">
@@ -153,9 +153,9 @@
     <rect x="720" y="171" width="54" height="18" rx="9" fill="#ffffff" stroke="#e36209"/>
     <text x="747" y="184" text-anchor="middle" fill="#e36209">3.3 V</text>
     <rect x="690" y="241" width="114" height="18" rx="9" fill="#ffffff" stroke="#1a7f37"/>
-    <text x="747" y="254" text-anchor="middle" fill="#1a7f37">TXD → RX2 (GPIO16)</text>
+    <text x="747" y="254" text-anchor="middle" fill="#1a7f37">RXD → RX2 (GPIO16)</text>
     <rect x="690" y="276" width="114" height="18" rx="9" fill="#ffffff" stroke="#8250df"/>
-    <text x="747" y="289" text-anchor="middle" fill="#8250df">RXD → TX2 (GPIO17)</text>
+    <text x="747" y="289" text-anchor="middle" fill="#8250df">TXD → TX2 (GPIO17)</text>
   </g>
 
   <!-- ===== Variant: classic MAX485 with DE/RE ===== -->
@@ -192,9 +192,10 @@
 
   <!-- ===== Notes ===== -->
   <g font-size="12" fill="#1f2328">
-    <text x="40" y="700">• No response from the unit: swap A and B first, then TXD and RXD. Both are harmless.</text>
+    <text x="40" y="700">• No response from the unit: swap A and B first, then RXD and TXD. Both are harmless.</text>
     <text x="40" y="720">• Use a twisted pair for A/B; above roughly 10–20 m add a 120 Ω termination between A and B at the ESP32 end (many modules have a jumper).</text>
     <text x="40" y="740">• ESP32 powered over USB instead of 12 V: leave out the step-down and connect only B, A and GND. Never feed USB and VIN at the same time.</text>
     <text x="40" y="760">• The module's GND screw terminal (dashed) is optional; the ground is already shared through the step-down.</text>
+    <text x="40" y="780">• Auto-direction modules label RXD/TXD from the ESP32's point of view (straight: RXD → RX2, TXD → TX2); classic MAX485 boards use RO/DI (RO → RX2, DI → TX2).</text>
   </g>
 </svg>
