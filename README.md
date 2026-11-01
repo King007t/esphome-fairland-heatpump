@@ -23,7 +23,6 @@ the heat pump package and the climate component from this repository at build ti
   PFC voltage
 - Error codes decoded to plain text, plus fault and no-water-flow indicators
 - Climate (thermostat) entity with presets for the Home Assistant thermostat card
-- Quick-start button: power on, Super Silence, 30 °C
 - Encrypted API, encrypted OTA updates, captive-portal fallback
 
 ## Supported devices
@@ -41,7 +40,7 @@ Protocol: Modbus RTU, 9600 baud, 8 data bits, no parity, 1 stop bit, slave addre
 | Path | Description |
 |---|---|
 | `example.yaml` | Device configuration for the ESPHome add-on (board, Wi-Fi, API, OTA, package include) |
-| `fairland-heatpump.yaml` | ESPHome package: UART, Modbus, entities, climate, script and button |
+| `fairland-heatpump.yaml` | ESPHome package: UART, Modbus, entities and climate |
 | `components/fairland_climate/` | External component: climate entity and error-code decoder |
 | `secrets.yaml.example` | Secrets expected by `example.yaml` |
 | `docs/` | Wiring diagram and system overview |
@@ -176,7 +175,7 @@ Further options:
 | Entity | Type | Register | Note |
 |---|---|---|---|
 | Status | binary_sensor | coil 0 | unit on/off |
-| Power | switch | coil 0 | |
+| Power | switch | coil 0 | disabled by default |
 | Fault | binary_sensor (problem) | DI 48–95 | any error code active |
 | E3 No Water Flow | binary_sensor (problem) | DI 51 | protection message |
 | Fault Indicator DI16 | binary_sensor, diagnostic | DI 16 | vendor summary bit, not present on all firmware versions |
@@ -190,16 +189,20 @@ Further options:
 | Compressor Frequency | sensor Hz, diagnostic | IR 10 | |
 | Compressor Current | sensor A | IR 11 | raw value × 0.1 |
 | Auto / Heating / Cooling Setpoint Minimum and Maximum | 6 × sensor °C, diagnostic | IR 15–20 | limits reported by the unit, polled every 10 min; unknown on firmware that leaves them at 0 |
-| Mode | select | HR 0 | Auto / Heating / Cooling |
-| Working Mode | select | HR 1 | Smart / Silence / Super Silence / Turbo |
-| Heating Target Temperature | number | HR 3 | 18–40 °C, step 1 |
-| Cooling Target Temperature | number | HR 4 | 12–30 °C, step 1 |
-| Auto Target Temperature | number | HR 2 | 12–40 °C, step 1 |
+| Mode | select | HR 0 | Auto / Heating / Cooling, disabled by default |
+| Working Mode | select | HR 1 | Smart / Silence / Super Silence / Turbo, disabled by default |
+| Heating Target Temperature | number | HR 3 | 18–40 °C, step 1, disabled by default |
+| Cooling Target Temperature | number | HR 4 | 12–30 °C, step 1, disabled by default |
+| Auto Target Temperature | number | HR 2 | 12–40 °C, step 1, disabled by default |
 | Heat Pump | climate | coil 0, HR 0–4, IR 3 | thermostat with presets |
-| Start Super Silence 30 °C | button | | quick start |
 | Restart | button, diagnostic | | restarts the ESP32 |
 
 Entity names are prefixed with `friendly_name` in Home Assistant (e.g. `Fairland Heat Pump Power`).
+
+The climate entity is the intended control; the underlying switch, selects and numbers are created
+disabled in Home Assistant to keep the device page clean. Enable them in the entity settings if you
+need them for automations or dashboards. The flag applies when an entity is first registered, so on a
+device that was added earlier the entities keep their current state.
 
 ### Climate entity
 
@@ -219,28 +222,6 @@ entities above, so it generates no additional Modbus traffic.
 
 Suggested Home Assistant thermostat card features: `climate-hvac-modes` and
 `climate-preset-modes`.
-
-### Quick-start button
-
-`Start Super Silence 30 °C` runs the script `hp_start`:
-
-1. If the unit is off: set coil 0 and wait 5 s
-2. Working mode (HR 1) = Super Silence
-3. Wait 1 s
-4. Mode (HR 0) = Heating and target temperature (HR 3) = 30 °C
-
-The script takes parameters, so additional buttons in the device configuration are a few lines:
-
-```yaml
-button:
-  - platform: template
-    name: Start Silence 30 °C
-    on_press:
-      - script.execute:
-          id: hp_start
-          working_mode: "Silence"
-          target_temperature: 30
-```
 
 ## Error codes
 

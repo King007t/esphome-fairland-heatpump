@@ -49,7 +49,7 @@ external_components:
   - source: github://King007t/esphome-fairland-heatpump@main
     components: [fairland_climate]
 
-# Heat pump package (bus, entities, climate, script, button)
+# Heat pump package (bus, entities, climate)
 packages:
   fairland: github://King007t/esphome-fairland-heatpump/fairland-heatpump.yaml@main
 

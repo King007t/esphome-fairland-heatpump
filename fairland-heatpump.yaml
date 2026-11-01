@@ -2,7 +2,7 @@
 # Fairland pool heat pump (InverX / Inverter Plus, control board MWH216/MWH298)
 # Modbus RTU over RS485 – ESPHome package.
 #
-# This file contains only the device logic (bus, entities, climate, script).
+# This file contains only the device logic (bus, entities, climate).
 # Include it from your device configuration together with the climate component,
 # see example.yaml:
 #
@@ -67,6 +67,7 @@ switch:
     modbus_controller_id: fairland
     name: Power
     id: hp_power
+    disabled_by_default: true
     register_type: coil
     address: 0
     icon: mdi:power
@@ -338,6 +339,7 @@ select:
     modbus_controller_id: fairland
     name: Mode
     id: hp_mode
+    disabled_by_default: true
     address: 0
     value_type: U_WORD
     optimistic: true
@@ -351,6 +353,7 @@ select:
     modbus_controller_id: fairland
     name: Working Mode
     id: hp_working_mode
+    disabled_by_default: true
     address: 1
     value_type: U_WORD
     optimistic: true
@@ -369,6 +372,7 @@ number:
     modbus_controller_id: fairland
     name: Auto Target Temperature
     id: hp_target_auto
+    disabled_by_default: true
     register_type: holding
     address: 2
     value_type: U_WORD
@@ -386,6 +390,7 @@ number:
     modbus_controller_id: fairland
     name: Heating Target Temperature
     id: hp_target_heating
+    disabled_by_default: true
     register_type: holding
     address: 3
     reuse_previous_range: false  # new block 3-4
@@ -404,6 +409,7 @@ number:
     modbus_controller_id: fairland
     name: Cooling Target Temperature
     id: hp_target_cooling
+    disabled_by_default: true
     register_type: holding
     address: 4
     value_type: U_WORD
@@ -463,46 +469,7 @@ climate:
       heat: "Heating"
       cool: "Cooling"
 
-# -----------------------------------------------------------------------------
-# Script "power on + working mode + heating target temperature":
-# if off -> power on, wait 5 s, write working mode, wait 1 s,
-# write mode Heating + heating target temperature.
-# -----------------------------------------------------------------------------
-script:
-  - id: hp_start
-    mode: restart
-    parameters:
-      working_mode: string
-      target_temperature: float
-    then:
-      - if:
-          condition:
-            switch.is_off: hp_power
-          then:
-            - switch.turn_on: hp_power
-            - delay: 5s
-      - select.set:
-          id: hp_working_mode
-          option: !lambda "return working_mode;"
-      - delay: 1s
-      - select.set:
-          id: hp_mode
-          option: "Heating"
-      - number.set:
-          id: hp_target_heating
-          value: !lambda "return target_temperature;"
-
 button:
-  - platform: template
-    name: Start Super Silence 30 °C
-    id: hp_button_super_silence_30
-    icon: mdi:speedometer-slow
-    on_press:
-      - script.execute:
-          id: hp_start
-          working_mode: "Super Silence"
-          target_temperature: 30
-
   - platform: restart
     name: Restart
     entity_category: diagnostic
